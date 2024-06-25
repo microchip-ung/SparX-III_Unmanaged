@@ -1810,7 +1810,7 @@ vtss_rc atom12_mac_media_if_setup (
 }
 #endif /* !defined(LUTON26_L10) && !defined(LUTON26_L16) */
 
-
+#if TRANSIT_THERMAL
 vtss_rc atom12_read_temp_reg (
     vtss_port_no_t  port_no,
     ushort          *temp
@@ -1877,7 +1877,7 @@ vtss_rc atom12_read_temp_reg (
 
     return VTSS_RC_OK;
 }
-
+#endif
 
 #endif // VTSS_ATOM12
 

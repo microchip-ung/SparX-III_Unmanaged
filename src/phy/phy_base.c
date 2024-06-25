@@ -229,7 +229,7 @@ void atom_patch_suspend(vtss_port_no_t port_no, BOOL suspend) {
 }
 #endif // VTSS_ATOM12 || VTSS_TESLA || VTSS_ELISE
 
-
+#if TRANSIT_THERMAL
 ushort vtss_phy_read_temp(vtss_port_no_t port_no)
 {
     ushort reg;
@@ -245,7 +245,7 @@ ushort vtss_phy_read_temp(vtss_port_no_t port_no)
     reg &= 0xFF; // See data sheet for Registers 26G,27G and 28G
     return reg;
 }
-
+#endif
 
 /* ************************************************************************ */
 void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)

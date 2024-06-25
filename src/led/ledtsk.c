@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -91,7 +91,43 @@ void led_mode (uchar mode)
  ****************************************************************************/
 {
     switch (mode) {
-#if defined(LUTON26_L25)
+#if defined(LUTON26_L25UN)
+        /*
+         *  LED tower
+         *  (top)       o  mode A (link/speed)      sgpio port 2
+         *              o  mode B (link/duplex)     sgpio port 4
+         *              o  mode C (link/status)     sgpio port 6
+         *  (button)    o  PWR save                 sgpio port 8
+         */
+    case VTSS_LED_MODE_LINK_SPEED:
+	led_set(7, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(9, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(5, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(3, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(2, VTSS_SGPIO_BIT_2, LED_MODE_ON);  /* Green */
+	led_set(4, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+	led_set(8, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+        break;
+    case VTSS_LED_MODE_DUPLEX:
+	led_set(7, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(9, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(5, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(3, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(2, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+	led_set(8, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+	led_set(4, VTSS_SGPIO_BIT_2, LED_MODE_ON);  /* Green */
+        break;
+    case VTSS_LED_MODE_POWER_SAVE:
+	led_set(7, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(9, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(5, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(3, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Off */
+	led_set(2, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+	led_set(4, VTSS_SGPIO_BIT_2, LED_MODE_OFF); /* Green */
+	led_set(8, VTSS_SGPIO_BIT_2, LED_MODE_ON);  /* Green */
+break;
+    case VTSS_LED_MODE_LINK_STATUS:
+#elif defined(LUTON26_L25)
         /*
          *  LED tower
          *  (top)       o  mode A (link/speed)      sgpio port 26
@@ -206,8 +242,14 @@ void led_tsk (void)
  * Example     :
  ****************************************************************************/
 {
+#if defined(LUTON26_L25UN)
+
+    /* GPIO bit 12 is for push button */
+    if (h2_gpio_read(12)) {
+#else
     /* GPIO bit 16 is for push button */
     if (h2_gpio_read(16)) {
+#endif
         port_led_mode = (++port_led_mode) % VTSS_LED_MODE_END;
 
         /* Mode C not supported in the unmanaged solution */
@@ -271,6 +313,86 @@ static BOOL port_collision (uchar port_no)
     return FALSE;
 }
 
+#if defined(LUTON26_L25UN)
+/* ************************************************************************ */
+void led_port (uchar mode)
+/* ------------------------------------------------------------------------ --
+ * Purpose     : Setup port LED mode
+ * Remarks     :
+ * Restrictions:
+ * See also    :
+ * Example     :
+ ****************************************************************************/
+{
+    uchar port_no, i_port_no;
+    uchar link_mode;
+
+    for (port_no = 0; port_no < NO_OF_PORTS; port_no++) {
+        if (led_final_state[port_no] != VTSS_LED_MODE_NORMAL) {
+            /* at least one of error events occurs, just show the error status */
+            continue;
+        }
+        i_port_no = port2int(port_no + 1);
+        link_mode = phy_get_link_mode_raw(i_port_no);
+        switch (mode) {
+        case VTSS_LED_MODE_POWER_SAVE:
+            /* Force off no matter link is up or not */
+            led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_OFF);
+            break;
+
+        case VTSS_LED_MODE_LINK_SPEED:
+            /* Link/activity; Green for 1G and Yellow for 10/100 */
+            if (link_mode == LINK_MODE_DOWN) {
+                /* Link down */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_OFF);
+            } else if ((link_mode & LINK_MODE_SPEED_MASK) == LINK_MODE_SPEED_1000) {
+                /* Green: 1G link/activity */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_LINK_ACTIVE_MODE);
+            } else {
+                /* Yellow: 100/10 link/activity */
+                led_set(i_port_no, VTSS_SGPIO_BIT_1, LED_LINK_ACTIVE_MODE);
+            }
+            break;
+
+        case VTSS_LED_MODE_DUPLEX:
+            /* Duplex mode; Green for FDX and Yellow for HDX */
+            if (link_mode == LINK_MODE_DOWN) {
+                /* Link down */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_OFF);
+            } else if (link_mode & LINK_MODE_FDX_MASK) {
+                /* Green: FDX */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_ON);
+            } else {
+                if (port_collision(port_no)) {
+                    /* collision, blinking LED - Yellow/Blink: HDX */
+                    led_set(i_port_no, VTSS_SGPIO_BIT_1, VTSS_SGPIO_MODE_BL_0);
+                } else {
+                    /* no collision, turn on LED - Yellow/On: HDX */
+                    led_set(i_port_no, VTSS_SGPIO_BIT_1, LED_MODE_ON);
+                }
+            }
+            break;
+
+        case VTSS_LED_MODE_LINK_STATUS: /* This mode is not supported */
+            /* Green for link/activity; Yellow: Port disabled */
+            if (link_mode == LINK_MODE_DOWN) {
+                /* Link down */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_OFF);
+            } else if (link_mode & LINK_MODE_SPEED_MASK) {
+                /* Green: Link/activity */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_LINK_ACTIVE_MODE);
+            } else {
+                /* Yellow: Port disabled */
+                led_set(i_port_no, VTSS_SGPIO_BIT_1, LED_MODE_ON);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+#else
 /* ************************************************************************ */
 void led_port (uchar mode)
 /* ------------------------------------------------------------------------ --
@@ -349,7 +471,7 @@ void led_port (uchar mode)
         }
     }
 }
-
+#endif
 void led_refresh (void)
 {
     is_refresh_led = 1;
@@ -366,9 +488,14 @@ void led_init (void)
  * Example     :
  ****************************************************************************/
 {
+#if defined(LUTON26_L10)
+    /* LED brightness control */
+    h2_gpio_mode_set(29, VTSS_GPIO_OUT);
+    h2_gpio_write(29, 0); // reset GPIO
+#else
     phy_page_std(15);
     phy_write_masked(15, 29, 0x00f0, 0x00f0);
-
+#endif
     /*  Reset Collision counters */
     memset(led_state, 0, sizeof(led_state));
 
@@ -434,16 +561,32 @@ void led_state_set (uchar port_no, vtss_led_event_type_t event, vtss_led_mode_ty
         led_set(i_port_no, VTSS_SGPIO_BIT_1, LED_MODE_OFF);
         break;
     case VTSS_LED_MODE_ON_GREEN:
+#if defined(LUTON26_L25UN)
+        led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_ON);
+#else
         led_set(i_port_no, VTSS_SGPIO_BIT_1 /*ssss*/, LED_MODE_ON);
+#endif
         break;
     case VTSS_LED_MODE_ON_YELLOW:
+#if defined(LUTON26_L25UN)
+        led_set(i_port_no, VTSS_SGPIO_BIT_1, LED_MODE_ON);
+#else
         led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_ON);
+#endif
         break;
     case VTSS_LED_MODE_BLINK_GREEN:
+#if defined(LUTON26_L25UN)
+        led_set(i_port_no, VTSS_SGPIO_BIT_0, VTSS_SGPIO_MODE_BL_1);
+#else
         led_set(i_port_no, VTSS_SGPIO_BIT_1, VTSS_SGPIO_MODE_BL_1);
+#endif
         break;
     case VTSS_LED_MODE_BLINK_YELLOW:
+#if defined(LUTON26_L25UN)
+        led_set(i_port_no, VTSS_SGPIO_BIT_1, VTSS_SGPIO_MODE_BL_1);
+#else
         led_set(i_port_no, VTSS_SGPIO_BIT_0, VTSS_SGPIO_MODE_BL_1);
+#endif
         break;
     default:
         break;
@@ -467,8 +610,21 @@ void sgpio_auto_burst (uchar enable)
 
 uchar led_status (vtss_led_mode_type_t mode)
 {
-    switch(mode) {
-#if defined(LUTON26_L25)
+switch(mode) {
+#if defined(LUTON26_L25UN)
+    case VTSS_LED_MODE_ON_GREEN:
+        led_set(0, VTSS_SGPIO_BIT_2, LED_MODE_ON);
+        break;
+    case VTSS_LED_MODE_ON_RED:
+        led_set(1, VTSS_SGPIO_BIT_2, LED_MODE_ON);
+        break;
+    case VTSS_LED_MODE_BLINK_GREEN:
+        led_set(0, VTSS_SGPIO_BIT_2, VTSS_SGPIO_MODE_BL_1);
+        break;
+    case VTSS_LED_MODE_BLINK_RED:
+        led_set(1, VTSS_SGPIO_BIT_2, VTSS_SGPIO_MODE_BL_0);
+        break;
+#elif  defined(LUTON26_L25)
     case VTSS_LED_MODE_ON_GREEN:
         led_set(30, VTSS_SGPIO_BIT_1, LED_MODE_ON);
         break;

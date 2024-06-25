@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -8,7 +8,9 @@
 #include "vtss_luton26_reg.h"
 #include "h2gpios.h"
 #include "h2io.h"
-
+//#ifndef VSC5610EV_UN
+//#define VSC5610EV_UN
+//#endif
 /*****************************************************************************
  *
  *
@@ -124,7 +126,7 @@ void h2_gpio_write (uchar gpio_no, uchar value)
     }
 }
 
-#if defined(LUTON26_L10)
+#if defined(LUTON26_L10) || defined(LUTON26_L25UN)
 /* ************************************************************************ */
 uchar h2_sgpio_read(uchar sgpio_no, uchar bit_no)
 /* ------------------------------------------------------------------------ --
@@ -187,7 +189,14 @@ void h2_sgpio_enable()
 
     /* Enable ports */
     H2_WRITE(VTSS_DEVCPU_GCB_SIO_CTRL_SIO_PORT_ENABLE, LED_PORTS);
-
+#if defined(LUTON26_L25UN)
+    H2_WRITE(VTSS_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG,
+             VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_BMODE_0(3UL) |
+             VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_BMODE_1(1) | /* 10Hz */
+             VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_BURST_GAP(0x1F) |
+             VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_PORT_WIDTH(0x2) |
+             VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_AUTO_REPEAT);
+#else
     H2_WRITE(VTSS_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG,
              VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_BMODE_0(3UL) |
              VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_BMODE_1(1) | /* 10Hz */
@@ -195,6 +204,7 @@ void h2_sgpio_enable()
              VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_PORT_WIDTH(0x1) |
              /* VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_LD_POLARITY | */
              VTSS_F_DEVCPU_GCB_SIO_CTRL_SIO_CONFIG_SIO_AUTO_REPEAT);
+#endif
 
     /* Setup clock */
     H2_WRITE(VTSS_DEVCPU_GCB_SIO_CTRL_SIO_CLOCK,

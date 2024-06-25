@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -224,7 +224,11 @@ typedef u8 ip_addr_t [IP_ADDR_LEN];
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
 #define NO_OF_PORTS     25
 #define ALL_PORTS       0x02FFFFFF	//Port mask for physical ports
+#if defined(LUTON26_L25UN)
+#define LED_PORTS       0x3FFFFFFF	//LED Port mask for physical ports
+#else
 #define LED_PORTS       0x7EFFFFFF	//LED Port mask for physical ports
+#endif
 #elif !defined(LUTON26_L10)
 #define NO_OF_PORTS     16
 #ifdef LUTON26_L16_QSGMII_EXT_PHY

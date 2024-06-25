@@ -80,6 +80,7 @@ static uchar code ecpdset[] = { 0, 5, 9, 12, 14 };
  ****************************************************************************/
 
 #ifdef __PHY_RESET__
+#if VTSS_QUATTRO
 static void assert_reset (vtss_port_no_t port_no) {
     uchar timeout;
 
@@ -100,6 +101,7 @@ static void assert_reset (vtss_port_no_t port_no) {
         delay_1(1);
     }
 }
+#endif
 #endif /* __PHY_RESET__ */
 
 #if PERFECT_REACH_LNK_UP

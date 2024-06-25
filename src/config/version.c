@@ -12,14 +12,19 @@
 
 
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25)
 /* Don't exceed VERSION_LENGTH of 16.    12345678901234567890123*/
-char code sw_version [VERSION_LENGTH] = "Luton25 3.10.0";
-#elif !defined(LUTON26_L10)
-/* Don't exceed VERSION_LENGTH of 16.    12345678901234567890123*/
-char code sw_version [VERSION_LENGTH] = "Luton16e 3.10.0";
+char code sw_version [VERSION_LENGTH] = "Luton25 3.11.0";
 #else
 /* Don't exceed VERSION_LENGTH of 16.    12345678901234567890123*/
-char code sw_version [VERSION_LENGTH] = "Luton10 3.10.0";
+char code sw_version [VERSION_LENGTH] = "Luton25UN 3.11.0";
+#endif
+#elif !defined(LUTON26_L10)
+/* Don't exceed VERSION_LENGTH of 16.    12345678901234567890123*/
+char code sw_version [VERSION_LENGTH] = "Luton16e 3.11.0";
+#else
+/* Don't exceed VERSION_LENGTH of 16.    12345678901234567890123*/
+char code sw_version [VERSION_LENGTH] = "Luton10 3.11.0";
 #endif /* !defined(LUTON_G16) && !defined(LUTON_G16R) */
 char code compile_date [COMPILE_DATE_LENGTH] = __DATE__ " " __TIME__;
 

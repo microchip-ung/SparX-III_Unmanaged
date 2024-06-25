@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -201,9 +201,8 @@ void main (void)
      * @note    Phy Init must come after the h2_init_port, because the port
      *          clocks must be enabled.
      */
-    print_cr_lf();
     println_str("Initializing the PHYs...");
-    println_str("System might hang if MDC/MDIO interface access the PHY registers unsuccessfully!");
+    println_str("Unplugging cables from the dual media ports if the system seems hang.");
     if (phy_tsk_init() != FALSE) {
         sysutil_hang();
     }
@@ -244,7 +243,7 @@ void main (void)
 
 #if TRANSIT_VERIPHY
     phy_tsk(); // Activate state machine. We have seen that dual media doesn't pass VeriPhy if state machine is not activated.
-    phy_veriphy_all();
+    phy_veriphy_all(); //dual media might not pass VeriPhy if there are packets coming to one of the dual-media ports in booting stage.
 #endif
 #if TRANSIT_ACTIPHY
     phy_actiphy_all();

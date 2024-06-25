@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -9,6 +9,10 @@
 #error "phyconf.h is for common.h only"
 #endif
 
+#ifdef  LUTON26_L25UN
+#define VSC5610EV_UN  1
+//#define LUTON26_L25   0
+#endif
 
 /*****************************************************************************
  *

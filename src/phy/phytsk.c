@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -192,7 +192,11 @@ static void phy_init (void)
  */
 static void sfp_init (void)
 {
-#if defined(LUTON26_L25)
+#if defined(LUTON26_L25UN)
+    h2_gpio_mode_set(11, VTSS_GPIO_OUT);
+    h2_gpio_write(11, 1); //set GPIO11(I2C_MUX)=1 to select SFP1
+    h2_sgpio_write(27, 1, 0); // tx disable
+#elif  defined(LUTON26_L25)
     phy_page_std(SFP_MODULE_GPIO_PORT);
     /* Configure  PHY GPIO 2, 3 as input, and 4 as output */
     phy_page_gp(SFP_MODULE_GPIO_PORT);
@@ -567,16 +571,22 @@ static uchar serdes_port_sfp_detect(vtss_port_no_t port_no)
  ****************************************************************************/
 {
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25)
     ushort reg15g;
+#endif
 #endif
     uchar  present_l;
     /* do signal detect */
     if(phy_map_serdes(port_no)) {
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25UN)
+        present_l = h2_sgpio_read(25, 1);  //sfp1;
+#else
         phy_page_gp(SFP_MODULE_GPIO_PORT);
         reg15g = phy_read(SFP_MODULE_GPIO_PORT, 15);
         phy_page_std(SFP_MODULE_GPIO_PORT);
         present_l = test_bit_16(1, &reg15g);
+#endif
 #elif defined(LUTON26_L10)
         switch(port_no) {
         case 24:
@@ -680,7 +690,11 @@ static void handle_serdes(vtss_port_no_t port_no)
             }
         }
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25UN)
+        h2_sgpio_write(27, 1, 1); // tx enable
+#else
         h2_gpio_write(SFP_TXDISABLE_PIN, 0); // set GPIO
+#endif
 #endif
 
         phy_state[port_no] = SERDES_WAITING_FOR_LINK;
@@ -732,7 +746,11 @@ static void handle_serdes(vtss_port_no_t port_no)
                 if(!sfp_existed) {
                     if(mac_if != MAC_IF_SGMII) {
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25UN)
+                        h2_sgpio_write(27, 1, 0); //tx disable
+#else
                         h2_gpio_write(SFP_TXDISABLE_PIN, 1); // reset GPIO
+#endif
 #endif
                     }
                     phy_state[port_no] = SERDES_SET_UP_MODE;
@@ -750,7 +768,11 @@ static void handle_serdes(vtss_port_no_t port_no)
             if(!sfp_existed) {
                 phy_state[port_no] = SERDES_SET_UP_MODE;
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25UN)
+                h2_sgpio_write(27, 1, 0); // 1: tx_disable
+#else
                 h2_gpio_write(SFP_TXDISABLE_PIN, 1); // reset GPIO
+#endif
 #endif
                 h2_pcs1g_clock_stop(port_no);
                 do_link_down(port_no);
@@ -765,7 +787,11 @@ static void handle_serdes(vtss_port_no_t port_no)
             if(lm == LINK_MODE_DOWN) {
                 phy_state[port_no] = SERDES_SET_UP_MODE;
 #if !defined(LUTON26_L10) && !defined(LUTON26_L16)
+#if defined(LUTON26_L25UN)
+                h2_sgpio_write(27, 1, 0); // 1: tx_disable
+#else
                 h2_gpio_write(SFP_TXDISABLE_PIN, 1); // reset GPIO
+#endif
 #endif
                 h2_pcs1g_clock_stop(port_no);
                 do_link_down(port_no);
@@ -939,7 +965,7 @@ void phy_veriphy_all (void)
 
 
     // Start VeriPhy for all ports
-    port_mask = ALL_PORTS;
+    port_mask = ALL_PORTS;//The dual-media ports 20-23 might not pass the VeriPHY with RJ45 connected
 
     for (port_no = MIN_PORT; port_no < MAX_PORT; port_no++) {
         if (TEST_PORT_BIT_MASK(port_no, &port_mask) && phy_map(port_no)) {
@@ -948,16 +974,22 @@ void phy_veriphy_all (void)
         }
     }
 
-    // Pulling Verphy until Veriphy is done
+    // Polling Verphy until Veriphy is done
+    j = 0;
     for (port_no = MIN_PORT; port_no < MAX_PORT; port_no++) {
         if (TEST_PORT_BIT_MASK(port_no, &port_mask) && phy_map(port_no)) {
             done = FALSE;
             while (!done) { 		
                 veriphy_run(port_no, (veriphy_parms + port_no), &done);
+                j++;
+                if (j > 10) {
+                    break;//timeout: 10*10*10ms
+                }
+                delay(10);
             }
         }
     }
-
+    delay(10);
 
     errors = 0;
     for (port_no = MIN_PORT; port_no < MAX_PORT; port_no++) {
@@ -976,13 +1008,20 @@ void phy_veriphy_all (void)
             if(errors) break;
         }
     }
+    delay(10);
+
 
     if (errors) {
         for (j = 0; j < 10; j++) {
             for (port_no = MIN_PORT; port_no < MAX_PORT; port_no++) {
                 if (TEST_PORT_BIT_MASK(port_no, &port_mask) && phy_map(port_no)) {
+#if defined(LUTON26_L25UN)
+                    sgpio_output(port_no, VTSS_SGPIO_BIT_0, VTSS_SGPIO_STATE_OFF);
+                    sgpio_output(port_no, VTSS_SGPIO_BIT_1, VTSS_SGPIO_STATE_ON);
+#else
                     sgpio_output(port_no, VTSS_SGPIO_BIT_1, VTSS_SGPIO_STATE_OFF);
                     sgpio_output(port_no, VTSS_SGPIO_BIT_0, VTSS_SGPIO_STATE_ON);
+#endif
                 }
             }
             delay(MSEC_100);
@@ -995,6 +1034,8 @@ void phy_veriphy_all (void)
             delay(MSEC_100);
         }
     }
+    delay(10);
+
 
     for (port_no = MIN_PORT; port_no < MAX_PORT; port_no++) {
         if (TEST_PORT_BIT_MASK(port_no, &port_mask) && phy_map(port_no)) {

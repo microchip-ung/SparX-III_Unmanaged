@@ -200,7 +200,7 @@ vtss_rc atom12_mac_media_if_setup(
     vtss_port_no_t          port_no,
     vtss_phy_reset_conf_t   *conf
 );
-
+#if TRANSIT_THERMAL
 /**
  * Read temperature from PHY chip.
  */
@@ -208,6 +208,7 @@ vtss_rc atom12_read_temp_reg(
     vtss_port_no_t          port_no,
     ushort                  *temp
 );
+#endif
 #endif /* VTSS_ATOM12 */
 
 #if VTSS_ELISE
