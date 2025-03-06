@@ -254,7 +254,7 @@ const char *vtss_common_str_macaddr(const vtss_common_macaddr_t VTSS_COMMON_PTR_
  */
 vtss_common_linkspeed_t vtss_os_get_linkspeed(vtss_common_port_t portno)
 {
-    static const ushort speed[] = { 10, 100, 1000 };
+    static const ushort speed[] = { 10, 100, 1000, 2500 };
     uchar lm;
 
     VTSS_COMMON_ASSERT(portno > 0 && portno <= NO_OF_PORTS);

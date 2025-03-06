@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -152,6 +152,7 @@
    8 -- 100FX directly via MAC
    9 -- SerDes directly	via MAC
  0xa -- Auto selection via SFP info
+ 0xb -- SGMII_2G5 MAC-to-MAC
 ** Settings at PHY_MAP_PHY_NO only care when PHY_MAP_MIIM_NO is 0/1.
 
 Luton25 port number:
@@ -161,7 +162,7 @@ Luton25 port number:
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 0}
 
 #define PHY_MAP_MIIM_NO { \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 9}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 0xb}
 
 #define PHY_MAP_COMA_MODE_DISABLE { \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}
@@ -244,7 +245,7 @@ Luton10 port number:
   0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 #define PHY_MAP_MIIM_NO { \
-  0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 9}
+  0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0xb, 0xb}
 
 #define PHY_MAP_COMA_MODE_DISABLE { \
   0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}

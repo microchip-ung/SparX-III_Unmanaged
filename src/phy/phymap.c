@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -124,7 +124,8 @@ uchar phy_map_serdes(vtss_port_no_t port_no)	small
     return (port_to_miim[port_no] == 9 ||
 						port_to_miim[port_no] == 8 ||
 						port_to_miim[port_no] == 2 ||
-						port_to_miim[port_no] == 0xa);
+						port_to_miim[port_no] == 0xa ||
+						port_to_miim[port_no] == 0xb);
 }
 
 #if TRANSIT_SFP_DETECT

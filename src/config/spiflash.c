@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -688,9 +688,9 @@ static int flash_info_get (struct flash_info *info)
     default:
         print_str("Flash ID (0x");
         print_hex_dw(flash_id);
-        print_str(") not supported");
+        print_str(") not in flash_info_get().");
         print_cr_lf();
-        print_str("Assume 64K flash is used\r\n");
+        print_str("Assume this is a 64K bytes flash!\r\n");
         info->ss            = 0x1000;   // Sector Size (4K Bytes)
         info->se            = 0x20;     // Sector Erase
         info->be            = 0xD8;     // Bulk Erase

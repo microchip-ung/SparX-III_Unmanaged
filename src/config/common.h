@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -165,6 +165,7 @@ typedef struct {
 #define LINK_MODE_SPEED_10              0
 #define LINK_MODE_SPEED_100             1
 #define LINK_MODE_SPEED_1000            2
+#define LINK_MODE_SPEED_2500            3
 
 #define LINK_MODE_SPEED_MASK            0x03
 #define LINK_MODE_FDX_MASK              0x10
@@ -184,6 +185,8 @@ typedef struct {
 #define LINK_MODE_HDX_100               (LINK_MODE_SPEED_100)
 
 #define LINK_MODE_FDX_1000              (LINK_MODE_SPEED_1000 | LINK_MODE_FDX_MASK)
+
+#define LINK_MODE_FDX_2500              (LINK_MODE_SPEED_2500 | LINK_MODE_FDX_MASK)
 
 #define LINK_MODE_FDX_AND_PAUSE_MASK    (LINK_MODE_FDX_MASK | LINK_MODE_PAUSE_MASK)
 

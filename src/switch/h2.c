@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -247,7 +247,7 @@ static void _setup_port (uchar port_no, uchar link_mode)
         /* Take MAC, Port, Phy (intern) and PCS (SGMII/Serdes) clock out of reset */
         if (port_no > 9) {
             H2_WRITE(VTSS_DEV_PORT_MODE_CLOCK_CFG(VTSS_TO_DEV(port_no)),
-                     VTSS_F_DEV_PORT_MODE_CLOCK_CFG_LINK_SPEED(3UL-(link_mode & LINK_MODE_SPEED_MASK)));
+            (link_mode & LINK_MODE_SPEED_MASK) == 3? 1: VTSS_F_DEV_PORT_MODE_CLOCK_CFG_LINK_SPEED(3UL-(link_mode & LINK_MODE_SPEED_MASK)));
         } else {
             H2_WRITE(VTSS_DEV_GMII_PORT_MODE_CLOCK_CFG(VTSS_TO_DEV(port_no)),0UL);
         }
@@ -349,7 +349,7 @@ static void _setup_mac(uchar port_no, link_mode)
                         VTSS_F_REW_PORT_PORT_CFG_AGE_DIS);
 
         /* GIG/FDX mode */
-        if (link_spd_dpx == LINK_MODE_FDX_1000) {
+        if ((link_spd_dpx == LINK_MODE_FDX_1000) || (link_spd_dpx == LINK_MODE_FDX_2500)){
             value = VTSS_F_DEV_MAC_CFG_STATUS_MAC_MODE_CFG_FDX_ENA |
                     VTSS_F_DEV_MAC_CFG_STATUS_MAC_MODE_CFG_GIGA_MODE_ENA;
         } else if (link_spd_dpx & LINK_MODE_FDX_MASK) {
@@ -416,6 +416,7 @@ static void _setup_mac(uchar port_no, link_mode)
 
             if ((mac_if != MAC_IF_SERDES) &&
                 (mac_if != MAC_IF_100FX)  &&
+				(mac_if != MAC_IF_SERDES_2_5G) &&
                 (mac_if != MAC_IF_SGMII))
 #endif
                 _setup_pcs(port_no, link_mode);

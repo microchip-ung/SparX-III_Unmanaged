@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -490,7 +490,7 @@ static uchar sfp_detect(vtss_port_no_t port_no)
         } else if (buf[0] >= 25) { /* 2500Mb capabilities */
             //print_str(">2.5G SFP");
             //print_cr_lf();
-            return MAC_IF_SERDES; /* Currently default for 2.5G operation*/ 
+            return MAC_IF_SERDES_2_5G;/* Currently default for 2.5G operation*/
         }    
         else if (buf[0] >= 10 && buf[0] <= 22) { /* 1Gb capabilities -->  Copper SFP or Serdes 1000Base-X */
             if (sfp_i2c_read(0x50, port_no, 40, &buf[0], 8)) {   /* Try to recognize the SFP module via EEPROM */
@@ -629,7 +629,7 @@ static void handle_serdes(vtss_port_no_t port_no)
         if(sfp_existed) {
             mac_if = sfp_detect(port_no);
         } else {
-            mac_if = MAC_IF_SERDES;
+            mac_if = phy_map_miim_no(port_no) ; //MAC_IF_SERDES;
         }
 
         if(mac_if != phy_map_miim_no(port_no)) {
@@ -661,6 +661,9 @@ static void handle_serdes(vtss_port_no_t port_no)
             }
 #endif
             switch(mac_if) {
+            case MAC_IF_SERDES_2_5G:
+                media_if = VTSS_SERDES_MODE_2G5;
+                break;
             case MAC_IF_SERDES:
                 media_if = VTSS_SERDES_MODE_1000BaseX;
                 break;
@@ -679,7 +682,7 @@ static void handle_serdes(vtss_port_no_t port_no)
             mac_if_changed[port_no] = 0;
 
             /* Luton26 supports 1G-F(AN mode) and 100Full SFP module(Force mode) */
-            if (mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII || mac_if == MAC_IF_100FX) {
+            if (mac_if == MAC_IF_SERDES_2_5G || mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII || mac_if == MAC_IF_100FX) {
                 h2_pcs1g_setup(port_no, mac_if);
             }
 
@@ -708,7 +711,9 @@ static void handle_serdes(vtss_port_no_t port_no)
 
             mac_if = phy_map_miim_no(port_no);
 
-            if (mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII) {
+            if (mac_if == MAC_IF_SERDES_2_5G) {
+                lm = h2_pcs1g_2_5g_link_status_get(port_no);
+            } else if (mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII) {
                 lm = h2_pcs1g_clause_37_status_get(port_no);
             } else {
                 lm = h2_pcs1g_100fx_status_get(port_no);
@@ -728,6 +733,8 @@ static void handle_serdes(vtss_port_no_t port_no)
                 if(mac_if == MAC_IF_SGMII) {
                     ulong tgt = VTSS_TO_DEV(port_no);
                     if((lm & LINK_MODE_SPEED_AND_FDX_MASK) == LINK_MODE_FDX_1000) {
+                        H2_WRITE_MASKED(VTSS_DEV_CMN_MAC_CFG_STATUS_MAC_MODE_CFG(tgt), 0x00000011, 0x00000011);
+                    } else if((lm & LINK_MODE_SPEED_AND_FDX_MASK) == LINK_MODE_FDX_2500) {
                         H2_WRITE_MASKED(VTSS_DEV_CMN_MAC_CFG_STATUS_MAC_MODE_CFG(tgt), 0x00000011, 0x00000011);
                     } else {
                         if(lm & LINK_MODE_FDX_MASK) {
@@ -779,7 +786,9 @@ static void handle_serdes(vtss_port_no_t port_no)
                 break;
             }
 #endif
-            if (mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII) {
+            if (mac_if == MAC_IF_SERDES_2_5G) {
+                lm = h2_pcs1g_2_5g_link_status_get(port_no);
+	        } else if (mac_if == MAC_IF_SERDES || mac_if == MAC_IF_SGMII) {
                 lm = h2_pcs1g_clause_37_status_get(port_no);
             } else {
                 lm = h2_pcs1g_100fx_status_get(port_no);
@@ -896,7 +905,9 @@ uchar phy_get_link_mode_raw (vtss_port_no_t port_no)
 #if MAC_TO_MEDIA
         else if (phy_map_serdes(port_no)) {
             mac_if = phy_map_miim_no(port_no);
-            if (mac_if == 9 || mac_if == 2) {
+            if (mac_if == 0xb) {
+                lm = h2_pcs1g_2_5g_link_status_get(port_no);
+            } else if (mac_if == 9 || mac_if == 2) {
                 lm = h2_pcs1g_clause_37_status_get(port_no);
             } else {
                 lm = h2_pcs1g_100fx_status_get(port_no);

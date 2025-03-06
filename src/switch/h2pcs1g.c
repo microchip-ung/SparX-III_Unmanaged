@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2020 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -262,6 +262,16 @@ void h2_pcs1g_setup (uchar port_no, uchar mode)
     ulong tgt = VTSS_TO_DEV(port_no);
 
     switch(mode) {
+    case MAC_IF_SERDES_2_5G:
+        H2_WRITE_MASKED(VTSS_DEV_PORT_MODE_CLOCK_CFG(tgt), 0x00000001, 0x0000003b); // Restart clock
+        //H2_WRITE_MASKED(VTSS_DEV_MAC_CFG_STATUS_MAC_MODE_CFG(tgt), 0x00000011, 0x00000011); //giga & fdx
+        H2_WRITE_MASKED(VTSS_DEV_CMN_MAC_CFG_STATUS_MAC_MODE_CFG(tgt), 0x00000011, 0x00000011); //giga & fdx
+        H2_WRITE(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_CFG(tgt), 0x00000001);//2/24
+        H2_WRITE(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_MODE_CFG(tgt), 0x00000000);
+        H2_WRITE(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_SD_CFG(tgt), 0x00000011);
+        H2_WRITE(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_ANEG_CFG(tgt), 0x00000000);
+        H2_WRITE_MASKED(VTSS_DEV_PCS_FX100_CONFIGURATION_PCS_FX100_CFG(tgt), 0x00000000, 0x00000001); // Disable 100FX PCS
+        return;
     case MAC_IF_SERDES:
         H2_WRITE_MASKED(VTSS_DEV_PORT_MODE_CLOCK_CFG(tgt), 0x00000001, 0x0000003b); // Restart clock
         //H2_WRITE_MASKED(VTSS_DEV_MAC_CFG_STATUS_MAC_MODE_CFG(tgt), 0x00000011, 0x00000011); //giga & fdx
@@ -297,6 +307,48 @@ void h2_pcs1g_setup (uchar port_no, uchar mode)
         ;
     }
 }
+
+/* Get the PCS1G link status */
+uchar h2_pcs1g_2_5g_link_status_get(const uchar chip_port)
+{
+    ulong tgt = VTSS_TO_DEV(chip_port);
+    ulong reg_val;
+    uchar link_mode = LINK_MODE_DOWN;
+#if 0
+    /* Read PCS1G sticky register */
+    H2_READ(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY(tgt), reg_val);
+
+    if (BF(VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_OUT_OF_SYNC_STICKY, reg_val)) {
+        /* Clear sticky bit then re-enable PCS */
+        H2_WRITE_MASKED(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY(tgt),
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_OUT_OF_SYNC_STICKY,
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_OUT_OF_SYNC_STICKY);
+        H2_WRITE_MASKED(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_CFG(tgt),
+                        0,
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_CFG_PCS_ENA);
+        delay_1(5);
+        H2_WRITE_MASKED(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_CFG(tgt),
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_CFG_PCS_ENA,
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_CFG_PCS_ENA);
+    }
+
+    H2_READ(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY(tgt), reg_val);
+    if (BF(VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_LINK_DOWN_STICKY, reg_val)) {
+        /* The link has been down. Clear sticky bit by writing value 1 */
+        H2_WRITE_MASKED(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY(tgt),
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_LINK_DOWN_STICKY,
+                        VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_STICKY_LINK_DOWN_STICKY);
+    }
+#endif
+    /* Read PCS1G link status register */
+    H2_READ(VTSS_DEV_PCS1G_CFG_STATUS_PCS1G_LINK_STATUS(tgt), reg_val);
+    if (BF(VTSS_F_DEV_PCS1G_CFG_STATUS_PCS1G_LINK_STATUS_LINK_STATUS, reg_val)) {
+        link_mode = (LINK_MODE_FDX_2500 | LINK_MODE_PAUSE_MASK);
+    }
+    return link_mode;
+}
+
+
 #endif
 
 

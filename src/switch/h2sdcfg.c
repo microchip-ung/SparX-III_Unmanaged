@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -362,13 +362,13 @@ void h2_serdes_macro_config (void)
        	    		VTSS_F_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE(0UL),
        	    		VTSS_M_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE);
     h2_sd6g_cfg(VTSS_SERDES_MODE_QSGMII, 0xE);     /* Enable QSGMII, Serdes6g (3-1) */
-    h2_sd6g_cfg(VTSS_SERDES_MODE_SGMII, 0x1);      /* Enable SGMII, Serdes6g (0) */
+    h2_sd6g_cfg(VTSS_SERDES_MODE_2G5, 0x1);      /* Enable SGMII_2G5, Serdes6g (0) */
 #elif defined(LUTON26_L25UN)
     H2_WRITE_MASKED(VTSS_DEVCPU_GCB_MISC_MISC_CFG,
                     VTSS_F_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE(0UL),
                     VTSS_M_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE);
     h2_sd6g_cfg(VTSS_SERDES_MODE_QSGMII, 0xE);     /* Enable QSGMII, Serdes6g (3-1) */
-    h2_sd6g_cfg(VTSS_SERDES_MODE_SGMII, 0x1);      /* Enable SGMII, Serdes6g (0) */
+    h2_sd6g_cfg(VTSS_SERDES_MODE_2G5, 0x1);      /* Enable SGMII_2G5, Serdes6g (0) */
 #elif defined(LUTON26_L16)
 #ifdef LUTON26_L16_QSGMII_EXT_PHY
     H2_WRITE_MASKED(VTSS_DEVCPU_GCB_MISC_MISC_CFG,
@@ -385,7 +385,7 @@ void h2_serdes_macro_config (void)
     H2_WRITE_MASKED(VTSS_DEVCPU_GCB_MISC_MISC_CFG,
        	    		VTSS_F_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE(1UL),
        	    		VTSS_M_DEVCPU_GCB_MISC_MISC_CFG_SW_MODE);
-    h2_sd6g_cfg(VTSS_SERDES_MODE_SGMII, 0x3);      /* Enable SGMII, Serdes1g (1-0) */
+    h2_sd6g_cfg(VTSS_SERDES_MODE_2G5, 0x3);      /* Enable SGMII, Serdes6g (1-0) */
 #endif
 }
 

@@ -1,4 +1,4 @@
-//Copyright (c) 2004-2024 Microchip Technology Inc. and its subsidiaries.
+//Copyright (c) 2004-2025 Microchip Technology Inc. and its subsidiaries.
 //SPDX-License-Identifier: MIT
 
 
@@ -347,6 +347,9 @@ void led_port (uchar mode)
                 led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_MODE_OFF);
             } else if ((link_mode & LINK_MODE_SPEED_MASK) == LINK_MODE_SPEED_1000) {
                 /* Green: 1G link/activity */
+                led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_LINK_ACTIVE_MODE);
+            } else if ((link_mode & LINK_MODE_SPEED_MASK) == LINK_MODE_SPEED_2500) {
+                /* Green: 2G5 link/activity */
                 led_set(i_port_no, VTSS_SGPIO_BIT_0, LED_LINK_ACTIVE_MODE);
             } else {
                 /* Yellow: 100/10 link/activity */
