@@ -1,0 +1,73 @@
+# Copyright (c) 2006-2026 Microchip Technology Inc.
+# SPDX-License-Identifier: MIT
+#
+# Components of this repository, for the SBOM (see tools/sbom/README.txt).
+# Multi-document YAML; the format is described at the top of
+# tools/sbom/module_info_to_spdx.rb.
+---
+directory: src
+license: MIT
+name: SparX-III Unmanaged switch firmware
+description: 8051 firmware for the Microchip SparX-III (Luton26) unmanaged switches (VSC5609EV, VSC5610EV-UN)
+source: https://github.com/microchip-ung/SparX-III_Unmanaged
+# 'git' = the revision being described ('git describe --tags'), so this stays
+# right without a hand-edit per release.
+version: git
+attribution_file: COPYING
+---
+# I2C driver header carrying the eCos license header rather than MIT. Included
+# by main.c, i2c_h.c, clihnd.c and phytsk.c, so it is compiled into every image.
+files: src/main/i2c_h.h
+license: GPL-2.0-or-later WITH eCos-exception-2.0
+name: VCore-III I2C driver header
+description: I2C driver interface for the VCore-III CPU, under the eCos license
+# Microchip's own driver code, released under the eCos license - not a copy of
+# upstream eCos, so no download location or purl is claimed for it.
+source: Microchip Technology Inc. (eCos license)
+attribution: |
+  This file is part of eCos, the Embedded Configurable Operating System.
+  Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+
+  eCos is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free
+  Software Foundation; either version 2 or (at your option) any later
+  version.
+
+  As a special exception, if other files instantiate templates or use
+  macros or inline functions from this file, or you compile this file
+  and link it with other works to produce a work based on this file,
+  this file does not by itself cause the resulting work to be covered by
+  the GNU General Public License. However the source code for this file
+  must still be made available in accordance with section (3) of the GNU
+  General Public License v2.
+---
+# Keil's STARTUP.A51 template, adapted for Luton26. Copied out of the Keil C51
+# installation into the repo, so it ships in the source and is linked into
+# every image.
+files: src/main/startup.a51
+license: Keil
+name: Keil C51 startup code
+description: 8051 reset/startup code (STARTUP.A51) from the Keil C51 compiler package
+source: Keil Elektronik GmbH and Keil Software, Inc.
+attribution: |
+  This file is part of the C51 Compiler package
+  Copyright (c) 1988-2002 Keil Elektronik GmbH and Keil Software, Inc.
+
+  Distributed under the terms of the Keil C51 development tools license
+  agreement, which covers use of the startup code in applications built with
+  the Keil tools.
+---
+# The compiler/linker the images are built with (prj/luton26u.uvproj).
+# Proprietary and NOT in this repo: category Toolchain makes it BUILD_TOOL_OF
+# the release and each image, without being contained in the release.
+placeholder: true
+license: Keil
+name: Keil C51 / uVision (MCS-51)
+description: Keil C51 compiler, A51 assembler, BL51 linker and OH51 hex converter
+source: https://www.keil.arm.com/
+category: Toolchain
+attribution: |
+  Copyright (c) Arm Limited (Keil)
+
+  Proprietary; licensed separately to each developer and not distributed with
+  this repository.
